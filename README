@@ -1,0 +1,4 @@
+A collection of Capistrano Deployment Recipes for use with common software and projects.
+
+Starting with a deployment recipe for Magento but more will be added in the future. These recipes extend the default Capistrano deployment tasks to meet
+the needs of specific software projects and additional tasks that may be useful.
