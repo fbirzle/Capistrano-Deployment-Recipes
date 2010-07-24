@@ -23,13 +23,13 @@ set :user, "USERNAME_HERE"
 
 # path to php executable 
 set :php, "/usr/local/php5/bin/php5"
+  
+set :app_symlinks, ["wp-content/uploads", "wp-config.php"]
 
-set :app_symlinks, ["/app/etc/local.xml", "/media", "/var", "/sitemap"]
-
-namespace :mage do
+namespace :wordpress do
   
   desc <<-DESC
-      Prepares one or more servers for deployment of Magento. Before you can use any \
+      Prepares one or more servers for deployment of Wordpress. Before you can use any \
       of the Capistrano deployment tasks with your project, you will need to \
       make sure all of your servers have been prepared with `cap deploy:setup'. When \
       you add a new server to your cluster, you can easily run the setup task \
@@ -42,7 +42,7 @@ namespace :mage do
     DESC
   task :setup, :except => { :no_release => true } do
     if app_symlinks
-      app_symlinks.each { |link| run "#{try_sudo} mkdir -p #{shared_path}#{link}" }
+      app_symlinks.each { |link| run "#{try_sudo} mkdir -p #{shared_path}/#{link}" }
     end
   end
 
@@ -58,9 +58,9 @@ namespace :mage do
     
     if app_symlinks
       # Remove the contents of the shared directories if they were deployed from SCM
-      app_symlinks.each { |path| run "#{try_sudo} rm -rf #{shared_path}#{link} #{current_path}#{link}" }
+      app_symlinks.each { |path| run "#{try_sudo} rm -rf #{shared_path}/#{link} #{current_path}/#{link}" }
       # Add symlinks the directoris in the shared location
-      app_symlinks.each { |link| run "#{try_sudo} ln -nfs #{shared_path}#{link} #{current_path}#{link}" }
+      app_symlinks.each { |link| run "#{try_sudo} ln -nfs #{shared_path}/#{link} #{current_path}/#{link}" }
     end
 
     if fetch(:normalize_asset_timestamps, true)
@@ -68,29 +68,8 @@ namespace :mage do
       asset_paths = %w(images stylesheets javascripts).map { |p| "#{latest_release}/public/#{p}" }.join(" ")
       run "find #{asset_paths} -exec touch -t #{stamp} {} ';'; true", :env => { "TZ" => "UTC" }
     end
-  end 
-  
-  desc <<-DESC
-    Clear the Magento Cache
-  DESC
-  task :cc do
-    run "cd #{current_path} && rm -rf var/cache/*"
-  end
-  
-  desc <<-DESC
-    Disable the Magento install by creating the maintenance.flag in the web root.
-  DESC
-  task :disable do
-    run "cd #{current_path} && touch maintenance.flag"    
-  end 
-  
-  desc <<-DESC
-    Enable the Magento stores by removing the maintenance.flag in the web root.
-  DESC
-  task :enable do
-    run "cd #{current_path} && rm -f maintenance.flag"    
-  end   
+  end  
 end
 
-after   'deploy:setup', 'mage:setup'
-after   'deploy:finalize_update', 'mage:finalize_update'
+after  'deploy:setup', 'wordpress:setup'
+after   'deploy:finalize_update', 'wordpress:finalize_update'
