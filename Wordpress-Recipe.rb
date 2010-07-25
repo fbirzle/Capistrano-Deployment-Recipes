@@ -24,8 +24,8 @@ set :user, "USERNAME_HERE"
 # path to php executable 
 set :php, "/usr/local/php5/bin/php5"
   
-set :app_symlinks, ["wp-content/uploads", "wp-config.php"]
-
+set :app_symlinks, ["wp-content/uploads"]
+set :app_file_symlinks, ["wp-config.php", "sitemap.xml", "sitemap.xml.qz"]
 namespace :wordpress do
   
   desc <<-DESC
@@ -44,6 +44,9 @@ namespace :wordpress do
     if app_symlinks
       app_symlinks.each { |link| run "#{try_sudo} mkdir -p #{shared_path}/#{link}" }
     end
+    if app_file_symlinks
+      app_file_symlinks.each { |link| run "#{try_sudo} touch #{shared_path}/#{link} && chmod 777 #{shared_path}/#{link}" }
+    end
   end
 
   desc <<-DESC
@@ -58,15 +61,16 @@ namespace :wordpress do
     
     if app_symlinks
       # Remove the contents of the shared directories if they were deployed from SCM
-      app_symlinks.each { |path| run "#{try_sudo} rm -rf #{shared_path}/#{link} #{current_path}/#{link}" }
+      app_symlinks.each { |link| run "#{try_sudo} rm -rf #{latest_release}/#{link}" }
       # Add symlinks the directoris in the shared location
-      app_symlinks.each { |link| run "#{try_sudo} ln -nfs #{shared_path}/#{link} #{current_path}/#{link}" }
+      app_symlinks.each { |link| run "#{try_sudo} ln -nfs #{shared_path}/#{link} #{latest_release}/#{link}" }
     end
-
-    if fetch(:normalize_asset_timestamps, true)
-      stamp = Time.now.utc.strftime("%Y%m%d%H%M.%S")
-      asset_paths = %w(images stylesheets javascripts).map { |p| "#{latest_release}/public/#{p}" }.join(" ")
-      run "find #{asset_paths} -exec touch -t #{stamp} {} ';'; true", :env => { "TZ" => "UTC" }
+    
+    if app_file_symlinks
+      # Remove the contents of the shared directories if they were deployed from SCM
+      app_file_symlinks.each { |link| run "#{try_sudo} rm -f #{latest_release}/#{link}" }
+      # Add symlinks the directoris in the shared location
+      app_file_symlinks.each { |link| run "#{try_sudo} ln -s #{shared_path}/#{link} #{latest_release}/#{link}" }
     end
   end  
 end
