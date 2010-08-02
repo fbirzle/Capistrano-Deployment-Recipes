@@ -1,29 +1,3 @@
-set :application, "magentoapp"
-set :repository,  "svn+ssh://PATH_TO_YOUR_RELEASE_BRANCH"
-
-# If you aren't deploying to /var/www/apps/#{application} on the target
-# servers (which is the default), you can specify the actual location
-# via the :deploy_to variable:
-set :deploy_to, "/DEPLOYMENT_PATH_HERE/#{application}"
-
-# If there's no access to the repository from the production server, deploy via uploading tarball to the server
-#set :deploy_via, :copy
-
-# If you aren't using Subversion to manage your source code, specify
-# your SCM below:
-# set :scm, :subversion
-
-# Application server|servers [APLICATION_SERVER, "WEB_SERVER", "DATABASE_SERVER"] hostnames or IPs accessible from the client terminal
-role :app, "APPLICATION_SERVER_HERE"
-role :web, "WEB_SERVER_HER"
-role :db,  "DB_SERVER_HERE", :primary => true
-
-# The username of the user who can access the machines
-set :user, "USERNAME_HERE"
-
-# path to php executable 
-set :php, "/usr/local/php5/bin/php5"
-  
 set :app_symlinks, ["wp-content/uploads"]
 set :app_file_symlinks, ["wp-config.php", "sitemap.xml", "sitemap.xml.qz"]
 namespace :wordpress do

@@ -1,31 +1,6 @@
-set :application, "magentoapp"
-set :repository,  "svn+ssh://PATH_TO_YOUR_RELEASE_BRANCH"
-
-# If you aren't deploying to /var/www/apps/#{application} on the target
-# servers (which is the default), you can specify the actual location
-# via the :deploy_to variable:
-set :deploy_to, "/DEPLOYMENT_PATH_HERE/#{application}"
-
-# If there's no access to the repository from the production server, deploy via uploading tarball to the server
-#set :deploy_via, :copy
-
-# If you aren't using Subversion to manage your source code, specify
-# your SCM below:
-# set :scm, :subversion
-
-# Application server|servers [APLICATION_SERVER, "WEB_SERVER", "DATABASE_SERVER"] hostnames or IPs accessible from the client terminal
-role :app, "APPLICATION_SERVER_HERE"
-role :web, "WEB_SERVER_HER"
-role :db,  "DB_SERVER_HERE", :primary => true
-
-# The username of the user who can access the machines
-set :user, "USERNAME_HERE"
-
-# path to php executable 
-set :php, "/usr/local/php5/bin/php5"
-
-set :app_symlinks, ["/media", "/var", "/sitemap"]
-set :app_file_symlinks, ["/app/etc/local.xml"]
+set :app_symlinks, ["/media", "/var", "/sitemaps", "/staging"]
+set :app_shared_dirs, ["/app/etc", "/sitemaps", "/media", "/var", "/staging"]
+set :app_shared_files, ["/app/etc/local.xml"]
 
 namespace :mage do
   
@@ -42,11 +17,11 @@ namespace :mage do
       will not destroy any deployed revisions or data.
     DESC
   task :setup, :except => { :no_release => true } do
-    if app_symlinks
-      app_symlinks.each { |link| run "#{try_sudo} mkdir -p #{shared_path}#{link}" }
+    if app_shared_dirs
+      app_shared_dirs.each { |link| run "#{try_sudo} mkdir -p #{shared_path}#{link} && chmod 777 #{shared_path}#{link}" }
     end
-    if app_file_symlinks
-      app_file_symlinks.each { |link| run "#{try_sudo} touch #{shared_path}/#{link} && chmod 777 #{shared_path}/#{link}" }
+    if app_shared_files
+      app_shared_files.each { |link| run "#{try_sudo} touch #{shared_path}#{link} && chmod 777 #{shared_path}#{link}" }
     end
   end
 
@@ -62,16 +37,16 @@ namespace :mage do
     
     if app_symlinks
       # Remove the contents of the shared directories if they were deployed from SCM
-      app_symlinks.each { |path| run "#{try_sudo} rm -rf #{shared_path}#{link} #{latest_release}#{link}" }
+      app_symlinks.each { |link| run "#{try_sudo} rm -rf #{shared_path}#{link} #{latest_release}#{link}" }
       # Add symlinks the directoris in the shared location
       app_symlinks.each { |link| run "ln -nfs #{shared_path}#{link} #{latest_release}#{link}" }
     end
     
-    if app_file_symlinks
+    if app_shared_files
       # Remove the contents of the shared directories if they were deployed from SCM
-      app_file_symlinks.each { |link| run "#{try_sudo} rm -f #{latest_release}/#{link}" }
+      app_shared_files.each { |link| run "#{try_sudo} rm -f #{latest_release}/#{link}" }
       # Add symlinks the directoris in the shared location
-      app_file_symlinks.each { |link| run "ln -s #{shared_path}/#{link} #{latest_release}/#{link}" }
+      app_shared_files.each { |link| run "ln -s #{shared_path}#{link} #{latest_release}#{link}" }
     end
   end 
   
