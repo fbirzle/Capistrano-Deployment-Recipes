@@ -37,14 +37,14 @@ namespace :mage do
     
     if app_symlinks
       # Remove the contents of the shared directories if they were deployed from SCM
-      app_symlinks.each { |link| run "#{try_sudo} rm -rf #{shared_path}#{link} #{latest_release}#{link}" }
+      app_symlinks.each { |link| run "#{try_sudo} rm -rf #{latest_release}#{link}" }
       # Add symlinks the directoris in the shared location
       app_symlinks.each { |link| run "ln -nfs #{shared_path}#{link} #{latest_release}#{link}" }
     end
     
     if app_shared_files
       # Remove the contents of the shared directories if they were deployed from SCM
-      app_shared_files.each { |link| run "#{try_sudo} rm -f #{latest_release}/#{link}" }
+      app_shared_files.each { |link| run "#{try_sudo} rm -rf #{latest_release}/#{link}" }
       # Add symlinks the directoris in the shared location
       app_shared_files.each { |link| run "ln -s #{shared_path}#{link} #{latest_release}#{link}" }
     end

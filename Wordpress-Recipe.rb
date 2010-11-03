@@ -42,7 +42,7 @@ namespace :wordpress do
     
     if app_file_symlinks
       # Remove the contents of the shared directories if they were deployed from SCM
-      app_file_symlinks.each { |link| run "#{try_sudo} rm -f #{latest_release}/#{link}" }
+      app_file_symlinks.each { |link| run "#{try_sudo} rm -rf #{latest_release}/#{link}" }
       # Add symlinks the directoris in the shared location
       app_file_symlinks.each { |link| run "#{try_sudo} ln -s #{shared_path}/#{link} #{latest_release}/#{link}" }
     end
