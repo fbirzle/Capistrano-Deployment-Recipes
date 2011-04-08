@@ -8,7 +8,7 @@ namespace :module do
     #{module_to} The location in the destination project the files should be copied to.
   DESC
   task :copy, :roles => :web, :except => { :no_release => true } do
-    run "#{try_sudo} cp -RPf #{latest_release}#{module_from} #{module_to}"
+    run "#{try_sudo} cp -Rf #{latest_release}#{module_from} #{module_to}"
   end
 end
 

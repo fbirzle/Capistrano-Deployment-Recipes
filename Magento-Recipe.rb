@@ -16,7 +16,7 @@ namespace :mage do
       It is safe to run this task on servers that have already been set up; it \
       will not destroy any deployed revisions or data.
     DESC
-  task :setup, :except => { :no_release => true } do
+  task :setup, :roles => :web, :except => { :no_release => true } do
     if app_shared_dirs
       app_shared_dirs.each { |link| run "#{try_sudo} mkdir -p #{shared_path}#{link} && chmod 777 #{shared_path}#{link}" }
     end
@@ -32,7 +32,7 @@ namespace :mage do
     Any directories deployed from the SCM are first removed and then replaced with \
     symlinks to the same directories within the shared location.
   DESC
-  task :finalize_update, :except => { :no_release => true } do    
+  task :finalize_update, :roles => :web, :except => { :no_release => true } do    
     run "chmod -R g+w #{latest_release}" if fetch(:group_writable, true)
     
     if app_symlinks
@@ -53,21 +53,21 @@ namespace :mage do
   desc <<-DESC
     Clear the Magento Cache
   DESC
-  task :cc do
+  task :cc, :roles => :web do
     run "cd #{current_path} && rm -rf var/cache/*"
   end
   
   desc <<-DESC
     Disable the Magento install by creating the maintenance.flag in the web root.
   DESC
-  task :disable do
+  task :disable, :roles => :web do
     run "cd #{current_path} && touch maintenance.flag"    
   end 
   
   desc <<-DESC
     Enable the Magento stores by removing the maintenance.flag in the web root.
   DESC
-  task :enable do
+  task :enable, :roles => :web do
     run "cd #{current_path} && rm -f maintenance.flag"    
   end   
 end
